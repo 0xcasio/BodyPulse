@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-sage-primary: 95 122 95;
+    --color-terracotta-primary: 208 112 78;
+    --color-cream-bg: 253 252 251;
+    --color-amber-accent: 240 160 45;
+  }
+
+  body {
+    @apply bg-cream-50 text-sage-900 font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  /* Organic blob backgrounds */
+  .blob-bg {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .blob-bg::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+      ellipse at 30% 30%,
+      rgba(95, 122, 95, 0.08) 0%,
+      transparent 50%
+    );
+    animation: blob-float 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .blob-bg::after {
+    content: '';
+    position: absolute;
+    bottom: -50%;
+    right: -50%;
+    pointer-events: none;
+    z-index: 0;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+      ellipse at 70% 70%,
+      rgba(208, 112, 78, 0.06) 0%,
+      transparent 50%
+    );
+    animation: blob-float 25s ease-in-out infinite reverse;
+  }
+
+  @keyframes blob-float {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(2%, -2%) scale(1.05);
+    }
+    50% {
+      transform: translate(-2%, 2%) scale(0.95);
+    }
+    75% {
+      transform: translate(2%, 2%) scale(1.02);
+    }
+  }
+
+  /* Card with soft elevation */
+  .card-soft {
+    @apply bg-white rounded-2xl shadow-sm border border-sage-100/50;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-soft:hover {
+    @apply shadow-md border-sage-200/50;
+    transform: translateY(-2px);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-sage-600 to-terracotta-500 bg-clip-text text-transparent;
+  }
+
+  /* Organic button */
+  .btn-organic {
+    @apply px-6 py-3 rounded-full font-medium transition-all duration-300;
+    @apply bg-gradient-to-r from-sage-500 to-sage-600 text-white;
+    @apply hover:from-sage-600 hover:to-sage-700;
+    @apply active:scale-95;
+    box-shadow: 0 4px 12px rgba(95, 122, 95, 0.2);
+  }
+
+  .btn-organic:hover {
+    box-shadow: 0 6px 20px rgba(95, 122, 95, 0.3);
+  }
+
+  /* Metric status indicators */
+  .status-excellent {
+    @apply bg-sage-100 text-sage-700 border-sage-200;
+  }
+
+  .status-good {
+    @apply bg-sage-50 text-sage-600 border-sage-100;
+  }
+
+  .status-moderate {
+    @apply bg-amber-50 text-amber-700 border-amber-200;
+  }
+
+  .status-attention {
+    @apply bg-terracotta-50 text-terracotta-700 border-terracotta-200;
+  }
+
+  /* Smooth stagger animations */
+  .stagger-item {
+    animation: slideUp 0.6s ease-out backwards;
+  }
+
+  .stagger-item:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-item:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-item:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-item:nth-child(4) { animation-delay: 0.2s; }
+  .stagger-item:nth-child(5) { animation-delay: 0.25s; }
+  .stagger-item:nth-child(6) { animation-delay: 0.3s; }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

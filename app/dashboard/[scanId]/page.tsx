@@ -2,26 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Download, Share2, User, Activity, TrendingUp, Target, Heart, Scale, BarChart3, Trash2 } from "lucide-react";
+import { ArrowLeft, Share2, User, Activity, TrendingUp, Target, Heart, Scale, BarChart3, Trash2 } from "lucide-react";
 import ScoreGauge from "@/components/dashboard/ScoreGauge";
 import MetricCard from "@/components/dashboard/MetricCard";
 import CategorySection from "@/components/dashboard/CategorySection";
 import DataCard from "@/components/dashboard/DataCard";
 import BodyDiagram from "@/components/dashboard/BodyDiagram";
 import { Scan } from "@/types/scan";
-import CardGenerator from "@/components/share/CardGenerator";
 import { getUserScans, getScanById, deleteScan, updateScan } from "@/lib/db/queries";
 import { getUserProfile } from "@/lib/db/users";
 import { getAgeForScan } from "@/lib/utils/age";
 import { Edit2, Check, X, Loader2 } from "lucide-react";
+import ExportButton from "@/components/export/ExportButton";
 
 export default function DashboardScanPage() {
   const router = useRouter();
   const params = useParams();
   const scanId = params.scanId as string;
   const [scan, setScan] = useState<Scan | null>(null);
-  const [previousScan, setPreviousScan] = useState<Scan | null>(null);
-  const [showExport, setShowExport] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
@@ -47,13 +45,6 @@ export default function DashboardScanPage() {
       // Load user profile to get birthday for age calculation
       const profile = await getUserProfile();
       setUserProfile(profile);
-
-      // Load previous scan for comparison
-      const scans = await getUserScans();
-      const currentIndex = scans.findIndex(s => s.id === scanId);
-      if (currentIndex > 0) {
-        setPreviousScan(scans[currentIndex - 1]);
-      }
     } catch (error) {
       console.error('Error loading scan:', error);
       router.push('/history');
@@ -223,7 +214,7 @@ export default function DashboardScanPage() {
 
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-3xl md:text-5xl font-display font-bold gradient-text mb-2">
+              <h1 className="text-3xl md:text-5xl font-display font-bold text-sage-900 mb-2">
                 Your Body Composition Analysis
               </h1>
               <p className="text-lg text-sage-600">
@@ -238,7 +229,8 @@ export default function DashboardScanPage() {
               </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
+              <ExportButton scan={scan} />
               <button
                 onClick={handleDelete}
                 className="px-4 py-2 rounded-full font-medium transition-all duration-300 bg-white text-terracotta-600 border-2 border-terracotta-200 hover:border-terracotta-300 hover:bg-terracotta-50 flex items-center gap-2"
@@ -246,13 +238,6 @@ export default function DashboardScanPage() {
               >
                 <Trash2 className="w-4 h-4" />
                 <span>Delete</span>
-              </button>
-              <button
-                onClick={() => setShowExport(true)}
-                className="px-4 py-2 rounded-full font-medium transition-all duration-300 bg-white text-sage-700 border-2 border-sage-200 hover:border-sage-300 hover:bg-sage-50 flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                <span>Export Card</span>
               </button>
               <button
                 onClick={() => router.push('/history')}
@@ -264,26 +249,6 @@ export default function DashboardScanPage() {
             </div>
           </div>
         </div>
-
-        {/* Export Card Modal */}
-        {showExport && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-6 max-w-4xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-display font-bold text-sage-900">
-                  Export Summary Card
-                </h2>
-                <button
-                  onClick={() => setShowExport(false)}
-                  className="text-sage-600 hover:text-sage-700"
-                >
-                  ✕
-                </button>
-              </div>
-              <CardGenerator scan={scan} previousScan={previousScan} theme="light" />
-            </div>
-          </div>
-        )}
 
         {/* Personal Information + InBody Score (Combined) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
@@ -393,7 +358,7 @@ export default function DashboardScanPage() {
           {/* All Metrics with Full Explanations - Click to Expand */}
           <div className="mb-4">
             <p className="text-sm text-sage-600 italic">
-              💡 Click any metric below to see detailed explanation and tips
+              Click any metric below to see detailed explanation and tips
             </p>
           </div>
 
@@ -451,7 +416,7 @@ export default function DashboardScanPage() {
             <>
               <div className="mb-4">
                 <p className="text-sm text-sage-600 italic">
-                  💡 Click Skeletal Muscle Mass to see detailed explanation and tips
+                  Click Skeletal Muscle Mass to see detailed explanation and tips
                 </p>
               </div>
 
@@ -657,7 +622,7 @@ export default function DashboardScanPage() {
           {/* Clickable Metrics with Full Explanations */}
           <div className="mb-4">
             <p className="text-sm text-sage-600 italic">
-              💡 Click BMR or Visceral Fat to see detailed explanation and tips
+              Click BMR or Visceral Fat to see detailed explanation and tips
             </p>
           </div>
 
@@ -702,7 +667,7 @@ export default function DashboardScanPage() {
               <>
                 <div className="mb-4">
                   <p className="text-sm text-sage-600 italic">
-                    💡 Click any metric below to see detailed explanation and tips
+                    Click any metric below to see detailed explanation and tips
                   </p>
                 </div>
 
@@ -808,7 +773,7 @@ export default function DashboardScanPage() {
             {/* Clickable Metrics with Full Explanations */}
             <div className="mb-4">
               <p className="text-sm text-sage-600 italic">
-                💡 Click any metric below to see detailed explanation and tips
+                Click any metric below to see detailed explanation and tips
               </p>
             </div>
 
@@ -917,6 +882,7 @@ function EditableDataCard({
   unitOptions,
   isSaving,
   helpText,
+  disabled,
 }: {
   label: string;
   value: number;
@@ -1001,12 +967,15 @@ function EditableDataCard({
     );
   }
 
+  // Ensure value is a valid number
+  const displayValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+
   return (
     <div className={`p-4 rounded-xl border border-sage-100 bg-white relative group ${disabled ? 'opacity-75' : ''}`}>
       <div className="text-xs font-medium text-sage-600 mb-1">{label}</div>
       <div className="flex items-baseline gap-1.5">
         <span className="text-2xl font-display font-bold text-sage-900">
-          {field === 'user_age' ? value : value.toFixed(1)}
+          {field === 'user_age' ? displayValue : displayValue.toFixed(1)}
         </span>
         {unit && (
           <span className="text-sm text-sage-500">{unit}</span>

@@ -101,7 +101,7 @@ export default function BodyDiagram({ segmentalLean, segmentalFat, weightUnit = 
               : 'bg-sage-100 text-sage-700 hover:bg-sage-200'
           }`}
         >
-          💪 Muscle Development
+          Muscle Development
         </button>
         {segmentalFat && (
           <button
@@ -112,7 +112,7 @@ export default function BodyDiagram({ segmentalLean, segmentalFat, weightUnit = 
                 : 'bg-terracotta-100 text-terracotta-700 hover:bg-terracotta-200'
             }`}
           >
-            🔥 Fat Distribution
+            Fat Distribution
           </button>
         )}
       </div>
@@ -406,7 +406,7 @@ export default function BodyDiagram({ segmentalLean, segmentalFat, weightUnit = 
       {/* Legend */}
       <div className="mt-8 text-center">
         <div className="text-sm text-sage-600 mb-3 font-semibold">
-          {viewMode === 'muscle' ? '💪 Muscle Development Level' : '🔥 Fat Distribution Level'}
+          {viewMode === 'muscle' ? 'Muscle Development Level' : 'Fat Distribution Level'}
         </div>
         <div className="flex justify-center gap-4 flex-wrap">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm">
@@ -432,7 +432,7 @@ export default function BodyDiagram({ segmentalLean, segmentalFat, weightUnit = 
 
       {/* Hover Instruction */}
       <div className="text-center mt-6 text-sm text-sage-500 font-medium">
-        💡 Hover over body parts to see detailed stats
+        Hover over body parts to see detailed stats
       </div>
     </div>
   );

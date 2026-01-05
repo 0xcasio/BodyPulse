@@ -171,6 +171,74 @@ export default function HistoryPage() {
           </div>
         </div>
 
+        {/* Progress Summary */}
+        {filteredScans.length > 0 && (
+          <div className="card-soft p-6 mb-8">
+            <h2 className="text-xl font-display font-semibold text-sage-900 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Progress Summary
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <div className="text-sm text-sage-600 mb-1">Weight Change</div>
+                <div className="text-2xl font-display font-bold text-sage-900">
+                  {(() => {
+                    if (filteredScans.length < 2) {
+                      return filteredScans[0]?.weight ? `${filteredScans[0].weight.toFixed(1)}` : 'N/A';
+                    }
+                    const first = filteredScans[filteredScans.length - 1];
+                    const latest = filteredScans[0];
+                    if (!first.weight || !latest.weight) return 'N/A';
+                    const change = latest.weight - first.weight;
+                    return change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
+                  })()}
+                  {filteredScans.length >= 2 && (
+                    <span className="text-sm text-sage-600 ml-1">
+                      {filteredScans[0]?.weight_unit || 'lbs'}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-sage-600 mb-1">Body Fat Change</div>
+                <div className="text-2xl font-display font-bold text-sage-900">
+                  {(() => {
+                    if (filteredScans.length < 2) {
+                      return filteredScans[0]?.body_fat_percentage ? `${filteredScans[0].body_fat_percentage.toFixed(1)}%` : 'N/A';
+                    }
+                    const first = filteredScans[filteredScans.length - 1];
+                    const latest = filteredScans[0];
+                    if (!first.body_fat_percentage || !latest.body_fat_percentage) return 'N/A';
+                    const change = latest.body_fat_percentage - first.body_fat_percentage;
+                    return change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
+                  })()}
+                  {filteredScans.length >= 2 && (
+                    <span className="text-sm text-sage-600 ml-1">%</span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-sage-600 mb-1">InBody Score</div>
+                <div className="text-2xl font-display font-bold text-sage-900">
+                  {filteredScans[0]?.inbody_score || 'N/A'}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-sage-600 mb-1">Time Span</div>
+                <div className="text-2xl font-display font-bold text-sage-900">
+                  {(() => {
+                    if (filteredScans.length < 2) return 'N/A';
+                    const first = new Date(filteredScans[filteredScans.length - 1].scan_date || filteredScans[filteredScans.length - 1].created_at);
+                    const latest = new Date(filteredScans[0].scan_date || filteredScans[0].created_at);
+                    const days = Math.floor((latest.getTime() - first.getTime()) / (1000 * 60 * 60 * 24));
+                    return `${days} days`;
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Empty State */}
         {filteredScans.length === 0 && (
           <div className="card-soft p-12 text-center">
@@ -252,64 +320,6 @@ export default function HistoryPage() {
             </div>
 
             <CompositionChart scans={filteredScans} />
-          </div>
-        )}
-
-        {/* Quick Stats Summary */}
-        {filteredScans.length > 1 && (
-          <div className="card-soft p-6 mt-8">
-            <h2 className="text-xl font-display font-semibold text-sage-900 mb-4 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Progress Summary
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <div className="text-sm text-sage-600 mb-1">Weight Change</div>
-                <div className="text-2xl font-display font-bold text-sage-900">
-                  {(() => {
-                    const first = filteredScans[filteredScans.length - 1];
-                    const latest = filteredScans[0];
-                    if (!first.weight || !latest.weight) return 'N/A';
-                    const change = latest.weight - first.weight;
-                    return change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
-                  })()}
-                  <span className="text-sm text-sage-600 ml-1">
-                    {filteredScans[0]?.weight_unit || 'lbs'}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-sage-600 mb-1">Body Fat Change</div>
-                <div className="text-2xl font-display font-bold text-sage-900">
-                  {(() => {
-                    const first = filteredScans[filteredScans.length - 1];
-                    const latest = filteredScans[0];
-                    if (!first.body_fat_percentage || !latest.body_fat_percentage) return 'N/A';
-                    const change = latest.body_fat_percentage - first.body_fat_percentage;
-                    return change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
-                  })()}
-                  <span className="text-sm text-sage-600 ml-1">%</span>
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-sage-600 mb-1">InBody Score</div>
-                <div className="text-2xl font-display font-bold text-sage-900">
-                  {filteredScans[0]?.inbody_score || 'N/A'}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-sage-600 mb-1">Time Span</div>
-                <div className="text-2xl font-display font-bold text-sage-900">
-                  {(() => {
-                    if (filteredScans.length < 2) return 'N/A';
-                    const first = new Date(filteredScans[filteredScans.length - 1].scan_date || filteredScans[filteredScans.length - 1].created_at);
-                    const latest = new Date(filteredScans[0].scan_date || filteredScans[0].created_at);
-                    const days = Math.floor((latest.getTime() - first.getTime()) / (1000 * 60 * 60 * 24));
-                    return `${days} days`;
-                  })()}
-                </div>
-              </div>
-            </div>
           </div>
         )}
       </motion.div>

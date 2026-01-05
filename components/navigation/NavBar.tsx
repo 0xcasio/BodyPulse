@@ -51,8 +51,8 @@ export default function NavBar() {
         <div className="flex items-center justify-between">
           {/* Logo/Brand */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-display font-bold gradient-text">
-              InBody Analyzer
+            <span className="text-2xl font-display font-bold text-sage-900">
+              Body Pulse
             </span>
           </Link>
 

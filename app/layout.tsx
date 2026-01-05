@@ -3,7 +3,7 @@ import "./globals.css";
 import NavBar from "@/components/navigation/NavBar";
 
 export const metadata: Metadata = {
-  title: "InBody Scan Analyzer",
+  title: "Body Pulse",
   description: "Understand your body composition with AI-powered insights",
 };
 

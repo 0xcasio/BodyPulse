@@ -134,8 +134,8 @@ export default function Home() {
       >
         {/* Header */}
         <motion.div className="text-center mb-12" variants={fadeInUp}>
-          <h1 className="text-5xl md:text-6xl font-display font-bold mb-4 gradient-text">
-            InBody Scan Analyzer
+          <h1 className="text-5xl md:text-6xl font-display font-bold mb-4 text-sage-900">
+            Body Pulse
           </h1>
           <p className="text-lg md:text-xl text-sage-600 max-w-2xl mx-auto text-balance">
             Upload your InBody scan and get clear, actionable insights about your body composition

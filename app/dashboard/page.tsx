@@ -109,7 +109,7 @@ export default function DashboardPage() {
 
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-3xl md:text-5xl font-display font-bold gradient-text mb-2">
+              <h1 className="text-3xl md:text-5xl font-display font-bold text-sage-900 mb-2">
                 Your Body Composition Analysis
               </h1>
               <p className="text-lg text-sage-600">
@@ -247,7 +247,7 @@ export default function DashboardPage() {
           {/* All Metrics with Full Explanations - Click to Expand */}
           <div className="mb-4">
             <p className="text-sm text-sage-600 italic">
-              💡 Click any metric below to see detailed explanation and tips
+              Click any metric below to see detailed explanation and tips
             </p>
           </div>
 
@@ -305,7 +305,7 @@ export default function DashboardPage() {
             <>
               <div className="mb-4">
                 <p className="text-sm text-sage-600 italic">
-                  💡 Click Skeletal Muscle Mass to see detailed explanation and tips
+                  Click Skeletal Muscle Mass to see detailed explanation and tips
                 </p>
               </div>
 
@@ -500,7 +500,7 @@ export default function DashboardPage() {
           {/* Clickable Metrics with Full Explanations */}
           <div className="mb-4">
             <p className="text-sm text-sage-600 italic">
-              💡 Click BMR or Visceral Fat to see detailed explanation and tips
+              Click BMR or Visceral Fat to see detailed explanation and tips
             </p>
           </div>
 
@@ -545,7 +545,7 @@ export default function DashboardPage() {
               <>
                 <div className="mb-4">
                   <p className="text-sm text-sage-600 italic">
-                    💡 Click any metric below to see detailed explanation and tips
+                    Click any metric below to see detailed explanation and tips
                   </p>
                 </div>
 
@@ -651,7 +651,7 @@ export default function DashboardPage() {
             {/* Clickable Metrics with Full Explanations */}
             <div className="mb-4">
               <p className="text-sm text-sage-600 italic">
-                💡 Click any metric below to see detailed explanation and tips
+                Click any metric below to see detailed explanation and tips
               </p>
             </div>
 

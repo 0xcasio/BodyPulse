@@ -101,9 +101,9 @@ export default function DashboardScanPage() {
       }
 
       if (field === 'user_age') {
-        updates.user_age = newValue;
+        updates.user_age = newValue ?? undefined;
       } else if (field === 'user_height') {
-        updates.user_height = newValue;
+        updates.user_height = newValue ?? undefined;
         updates.user_height_unit = (unit || scan.user_height_unit || 'ft') as 'in' | 'cm' | 'ft';
       } else if (field === 'weight') {
         updates.weight = newValue || scan.weight;

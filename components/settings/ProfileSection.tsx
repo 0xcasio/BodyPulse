@@ -73,7 +73,7 @@ export default function ProfileSection({ profile, onUpdate }: ProfileSectionProp
         default_height_unit: formData.default_height_unit || undefined,
         default_weight: formData.default_weight ? parseFloat(formData.default_weight) : undefined,
         default_weight_unit: formData.default_weight_unit || undefined,
-        default_gender: formData.default_gender || undefined,
+        default_gender: (formData.default_gender as 'male' | 'female' | undefined) || undefined,
       };
 
       // Remove undefined values

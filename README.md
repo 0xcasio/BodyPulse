@@ -151,8 +151,23 @@ The `/scans` folder contains sample InBody scans. You can:
 | `NEXT_PUBLIC_SUPABASE_URL` | No* | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | No* | Supabase anonymous key |
 | `SUPABASE_SERVICE_ROLE_KEY` | No* | Supabase service role key |
+| `DEMO_MODE` | No | Set to `true` to use mock data instead of real AI extraction |
 
 *Supabase is optional for Phase 1. Data is currently stored in sessionStorage.
+
+### Environment Variables Setup
+
+For local development, create a `.env.local` file in the root directory:
+
+```bash
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+DEMO_MODE=false
+```
+
+For Vercel deployment, see [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
 ## API Costs 💰
 

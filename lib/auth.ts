@@ -83,3 +83,39 @@ export function onAuthStateChange(callback: (event: string, session: any) => voi
   return supabase.auth.onAuthStateChange(callback);
 }
 
+/**
+ * Update user password
+ * Requires the user to be authenticated
+ */
+export async function updatePassword(newPassword: string) {
+  try {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error updating password:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Update user email
+ * Note: This may require email verification depending on Supabase settings
+ */
+export async function updateEmail(newEmail: string) {
+  try {
+    const { data, error } = await supabase.auth.updateUser({
+      email: newEmail,
+    });
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error updating email:', error);
+    return { data: null, error };
+  }
+}
+

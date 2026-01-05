@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Upload, History, LogOut, LogIn } from "lucide-react";
+import { Upload, History, LogOut, LogIn, Settings } from "lucide-react";
 import Link from "next/link";
 import { getSession, signOut } from "@/lib/auth";
 
@@ -81,6 +81,17 @@ export default function NavBar() {
                 >
                   <History className="w-4 h-4" />
                   <span>History</span>
+                </Link>
+                <Link
+                  href="/settings"
+                  className={`px-4 py-2 rounded-full font-medium transition-all duration-300 flex items-center gap-2 ${
+                    isActive('/settings')
+                      ? 'bg-sage-100 text-sage-900'
+                      : 'text-sage-600 hover:bg-sage-50'
+                  }`}
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Settings</span>
                 </Link>
                 <button
                   onClick={handleSignOut}

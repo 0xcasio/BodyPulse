@@ -1,5 +1,7 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Scan, ExtractedScanData } from '@/types/scan';
+import { getAgeForScan } from '@/lib/utils/age';
+import { getUserProfile } from './users';
 
 /**
  * Get the current authenticated user ID (auth.uid())
@@ -379,6 +381,19 @@ export async function saveScan(
     }
 
     const scanData = convertExtractedToScan(extracted, finalUserId, imageUrl, confidence);
+
+    // Calculate age from birthday if available
+    const userProfile = await getUserProfile(finalUserId);
+    if (userProfile?.birthday && scanData.scan_date) {
+      const calculatedAge = getAgeForScan(
+        userProfile.birthday,
+        scanData.scan_date,
+        scanData.user_age
+      );
+      if (calculatedAge !== null) {
+        scanData.user_age = calculatedAge;
+      }
+    }
 
     // Ensure user_id is set correctly (must match auth.uid() for RLS to work)
     const insertData = {

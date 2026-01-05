@@ -78,7 +78,7 @@ export default function ReviewPage() {
     });
   };
 
-  const handleFieldSave = (field: string, fieldType: 'number' | 'weight' | 'percentage' | 'integer') => {
+  const handleFieldSave = (field: string, fieldType: 'number' | 'weight' | 'percentage' | 'integer' | 'height') => {
     if (!editedData) return;
 
     const valueStr = editValues[field]?.trim() || '';
@@ -100,6 +100,13 @@ export default function ReviewPage() {
         value: newValue || 0,
         unit: (unit || editedData.weight?.unit || 'lbs') as 'kg' | 'lbs',
       };
+    } else if (field === 'user_height') {
+      // Height is stored as a number with a separate unit field
+      (updatedData as any).user_height = newValue;
+      (updatedData as any).user_height_unit = (unit || editedData.user_height_unit || 'ft') as 'in' | 'cm' | 'ft';
+    } else if (field === 'user_age') {
+      // Age is stored as an integer
+      (updatedData as any).user_age = newValue ? Math.round(newValue) : null;
     } else if (field === 'skeletal_muscle_mass' || field === 'body_fat_mass') {
       updatedData[field] = {
         value: newValue || 0,
@@ -228,6 +235,38 @@ export default function ReviewPage() {
 
         {/* Extracted Data Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {/* Age */}
+          <MetricCard
+            label="Age"
+            value={editedData.user_age}
+            unit="years"
+            field="user_age"
+            fieldType="integer"
+            isEditing={editingField === 'user_age'}
+            editValue={editValues.user_age || ''}
+            onEdit={() => handleFieldEdit('user_age', editedData.user_age)}
+            onSave={() => handleFieldSave('user_age', 'integer')}
+            onCancel={handleFieldCancel}
+            onValueChange={(val) => setEditValues({ ...editValues, user_age: val })}
+          />
+
+          {/* Height */}
+          <MetricCard
+            label="Height"
+            value={editedData.user_height}
+            unit={editedData.user_height_unit || 'ft'}
+            field="user_height"
+            fieldType="height"
+            isEditing={editingField === 'user_height'}
+            editValue={editValues.user_height || ''}
+            editUnit={editValues.user_height_unit || ''}
+            onEdit={() => handleFieldEdit('user_height', editedData.user_height, editedData.user_height_unit)}
+            onSave={() => handleFieldSave('user_height', 'height')}
+            onCancel={handleFieldCancel}
+            onValueChange={(val) => setEditValues({ ...editValues, user_height: val })}
+            onUnitChange={(unit) => setEditValues({ ...editValues, user_height_unit: unit })}
+          />
+
           {/* Weight */}
           <MetricCard
             label="Weight"
@@ -442,7 +481,7 @@ function MetricCard({
   value?: number | null;
   unit?: string;
   field: string;
-  fieldType: 'number' | 'weight' | 'percentage' | 'integer';
+  fieldType: 'number' | 'weight' | 'percentage' | 'integer' | 'height';
   isEditing: boolean;
   editValue: string;
   editUnit?: string;
@@ -453,7 +492,7 @@ function MetricCard({
   onUnitChange?: (unit: string) => void;
 }) {
   const hasValue = value !== null && value !== undefined;
-  const needsUnit = fieldType === 'weight';
+  const needsUnit = fieldType === 'weight' || fieldType === 'height';
 
   if (isEditing) {
     return (
@@ -497,12 +536,22 @@ function MetricCard({
           />
           {needsUnit && onUnitChange && (
             <select
-              value={editUnit || 'lbs'}
+              value={editUnit || (fieldType === 'height' ? 'ft' : 'lbs')}
               onChange={(e) => onUnitChange(e.target.value)}
               className="px-3 py-2 border-2 border-sage-200 rounded-lg focus:border-sage-400 focus:outline-none text-sm text-sage-700"
             >
-              <option value="lbs">lbs</option>
-              <option value="kg">kg</option>
+              {fieldType === 'height' ? (
+                <>
+                  <option value="ft">ft</option>
+                  <option value="in">in</option>
+                  <option value="cm">cm</option>
+                </>
+              ) : (
+                <>
+                  <option value="lbs">lbs</option>
+                  <option value="kg">kg</option>
+                </>
+              )}
             </select>
           )}
           {!needsUnit && unit && (

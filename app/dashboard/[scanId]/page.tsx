@@ -10,7 +10,10 @@ import DataCard from "@/components/dashboard/DataCard";
 import BodyDiagram from "@/components/dashboard/BodyDiagram";
 import { Scan } from "@/types/scan";
 import CardGenerator from "@/components/share/CardGenerator";
-import { getUserScans, getScanById, deleteScan } from "@/lib/db/queries";
+import { getUserScans, getScanById, deleteScan, updateScan } from "@/lib/db/queries";
+import { getUserProfile } from "@/lib/db/users";
+import { getAgeForScan } from "@/lib/utils/age";
+import { Edit2, Check, X, Loader2 } from "lucide-react";
 
 export default function DashboardScanPage() {
   const router = useRouter();
@@ -20,6 +23,10 @@ export default function DashboardScanPage() {
   const [previousScan, setPreviousScan] = useState<Scan | null>(null);
   const [showExport, setShowExport] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     if (scanId) {
@@ -36,6 +43,10 @@ export default function DashboardScanPage() {
         return;
       }
       setScan(loadedScan);
+
+      // Load user profile to get birthday for age calculation
+      const profile = await getUserProfile();
+      setUserProfile(profile);
 
       // Load previous scan for comparison
       const scans = await getUserScans();
@@ -71,6 +82,72 @@ export default function DashboardScanPage() {
     }
   };
 
+  const handleFieldEdit = (field: string, currentValue: number | null | undefined, unit?: string) => {
+    setEditingField(field);
+    setEditValues({
+      ...editValues,
+      [field]: currentValue?.toString() || '',
+      [`${field}_unit`]: unit || '',
+    });
+  };
+
+  const handleFieldSave = async (field: string) => {
+    if (!scan) return;
+
+    setIsSaving(true);
+    try {
+      const valueStr = editValues[field]?.trim() || '';
+      const unit = editValues[`${field}_unit`] || '';
+
+      let updates: Partial<Scan> = {};
+      let newValue: number | null = null;
+
+      if (valueStr) {
+        const parsed = parseFloat(valueStr);
+        if (!isNaN(parsed)) {
+          newValue = field === 'user_age' ? Math.round(parsed) : parsed;
+        }
+      }
+
+      if (field === 'user_age') {
+        updates.user_age = newValue;
+      } else if (field === 'user_height') {
+        updates.user_height = newValue;
+        updates.user_height_unit = (unit || scan.user_height_unit || 'ft') as 'in' | 'cm' | 'ft';
+      } else if (field === 'weight') {
+        updates.weight = newValue || scan.weight;
+        updates.weight_unit = (unit || scan.weight_unit || 'lbs') as 'kg' | 'lbs';
+      }
+
+      // Mark as manually edited
+      updates.manually_edited = true;
+      const editedFields = [...(scan.edited_fields || [])];
+      if (!editedFields.includes(field)) {
+        editedFields.push(field);
+      }
+      updates.edited_fields = editedFields;
+
+      const updatedScan = await updateScan(scan.id, updates);
+      if (updatedScan) {
+        setScan(updatedScan);
+        setEditingField(null);
+        setEditValues({});
+      } else {
+        alert('Failed to update scan. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error updating scan:', error);
+      alert('An error occurred while updating the scan.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleFieldCancel = () => {
+    setEditingField(null);
+    setEditValues({});
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen blob-bg flex items-center justify-center">
@@ -83,14 +160,21 @@ export default function DashboardScanPage() {
     return null;
   }
 
+  // Calculate age from birthday if available, otherwise use stored age
+  const calculatedAge = getAgeForScan(
+    userProfile?.birthday,
+    scan.scan_date,
+    scan.user_age
+  );
+
   // Convert Scan to ExtractedScanData format for dashboard components
   const scanData = {
     scan_date: scan.scan_date,
     test_time: scan.test_time,
     user_height: scan.user_height,
     user_height_unit: scan.user_height_unit,
-    user_age: scan.user_age,
-    user_gender: scan.user_gender,
+    user_age: calculatedAge, // Use calculated age
+    user_gender: scan.user_gender, // Keep for internal use but don't display
     weight: { value: scan.weight, unit: scan.weight_unit },
     total_body_water: scan.total_body_water ? { value: scan.total_body_water, unit: 'L' as const } : undefined,
     protein: scan.protein ? { value: scan.protein, unit: scan.protein_unit || 'lbs' as const } : undefined,
@@ -204,30 +288,65 @@ export default function DashboardScanPage() {
         {/* Personal Information + InBody Score (Combined) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
           {/* Personal Information - Left side */}
-          {(scanData.user_age || scanData.user_height || scanData.user_gender || scanData.weight) && (
+          {(scanData.user_age || scanData.user_height || scanData.weight) && (
             <div className={`${hasInBodyScore ? 'lg:col-span-7' : 'lg:col-span-12'} card-soft p-6`}>
-              <h2 className="text-lg font-display font-semibold text-sage-900 mb-4">
-                Personal Information
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {scanData.user_age && (
-                  <DataCard label="Age" value={scanData.user_age} unit="years" />
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-display font-semibold text-sage-900">
+                  Personal Information
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {scanData.user_age !== null && scanData.user_age !== undefined && (
+                  <EditableDataCard
+                    label="Age"
+                    value={scanData.user_age}
+                    unit="years"
+                    field="user_age"
+                    isEditing={editingField === 'user_age'}
+                    editValue={editValues.user_age || ''}
+                    onEdit={() => handleFieldEdit('user_age', scanData.user_age)}
+                    onSave={() => handleFieldSave('user_age')}
+                    onCancel={handleFieldCancel}
+                    onValueChange={(val) => setEditValues({ ...editValues, user_age: val })}
+                    isSaving={isSaving}
+                    helpText={userProfile?.birthday ? "Calculated from your birthday" : undefined}
+                    disabled={!!userProfile?.birthday}
+                  />
                 )}
-                {scanData.user_height && (
-                  <DataCard
+                {scanData.user_height !== null && scanData.user_height !== undefined && (
+                  <EditableDataCard
                     label="Height"
                     value={scanData.user_height}
                     unit={scanData.user_height_unit || 'ft'}
+                    field="user_height"
+                    isEditing={editingField === 'user_height'}
+                    editValue={editValues.user_height || ''}
+                    editUnit={editValues.user_height_unit || ''}
+                    onEdit={() => handleFieldEdit('user_height', scanData.user_height, scanData.user_height_unit)}
+                    onSave={() => handleFieldSave('user_height')}
+                    onCancel={handleFieldCancel}
+                    onValueChange={(val) => setEditValues({ ...editValues, user_height: val })}
+                    onUnitChange={(unit) => setEditValues({ ...editValues, user_height_unit: unit })}
+                    unitOptions={['ft', 'in', 'cm']}
+                    isSaving={isSaving}
                   />
                 )}
-                {scanData.user_gender && (
-                  <DataCard label="Gender" value={scanData.user_gender} />
-                )}
                 {scanData.weight && (
-                  <DataCard
+                  <EditableDataCard
                     label="Total Weight"
-                    value={scanData.weight.value.toFixed(1)}
+                    value={scanData.weight.value}
                     unit={scanData.weight.unit}
+                    field="weight"
+                    isEditing={editingField === 'weight'}
+                    editValue={editValues.weight || ''}
+                    editUnit={editValues.weight_unit || ''}
+                    onEdit={() => handleFieldEdit('weight', scanData.weight?.value, scanData.weight?.unit)}
+                    onSave={() => handleFieldSave('weight')}
+                    onCancel={handleFieldCancel}
+                    onValueChange={(val) => setEditValues({ ...editValues, weight: val })}
+                    onUnitChange={(unit) => setEditValues({ ...editValues, weight_unit: unit })}
+                    unitOptions={['lbs', 'kg']}
+                    isSaving={isSaving}
                   />
                 )}
               </div>
@@ -778,6 +897,141 @@ export default function DashboardScanPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+// Editable Data Card Component
+function EditableDataCard({
+  label,
+  value,
+  unit,
+  field,
+  isEditing,
+  editValue,
+  editUnit,
+  onEdit,
+  onSave,
+  onCancel,
+  onValueChange,
+  onUnitChange,
+  unitOptions,
+  isSaving,
+  helpText,
+}: {
+  label: string;
+  value: number;
+  unit?: string;
+  field: string;
+  isEditing: boolean;
+  editValue: string;
+  editUnit?: string;
+  onEdit: () => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onValueChange: (val: string) => void;
+  onUnitChange?: (unit: string) => void;
+  unitOptions?: string[];
+  isSaving: boolean;
+  helpText?: string;
+  disabled?: boolean;
+}) {
+  if (isEditing) {
+    return (
+      <div className="p-4 rounded-xl border-2 border-sage-400 bg-white">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="text-xs font-medium text-sage-600">{label}</h3>
+          <div className="flex gap-1">
+            <button
+              onClick={onSave}
+              disabled={isSaving}
+              className="text-sage-600 hover:text-sage-700 transition-colors disabled:opacity-50"
+              title="Save"
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
+            </button>
+            <button
+              onClick={onCancel}
+              disabled={isSaving}
+              className="text-sage-400 hover:text-sage-600 transition-colors disabled:opacity-50"
+              title="Cancel"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <input
+            type="number"
+            step={field === 'user_age' ? '1' : '0.1'}
+            value={editValue}
+            onChange={(e) => onValueChange(e.target.value)}
+            className="flex-1 px-2 py-1 border-2 border-sage-200 rounded-lg focus:border-sage-400 focus:outline-none text-lg font-semibold text-sage-900"
+            placeholder="Enter value"
+            autoFocus
+            disabled={isSaving}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !isSaving) {
+                onSave();
+              } else if (e.key === 'Escape' && !isSaving) {
+                onCancel();
+              }
+            }}
+          />
+          {onUnitChange && unitOptions && (
+            <select
+              value={editUnit || unitOptions[0]}
+              onChange={(e) => onUnitChange(e.target.value)}
+              className="px-2 py-1 border-2 border-sage-200 rounded-lg focus:border-sage-400 focus:outline-none text-sm text-sage-700"
+              disabled={isSaving}
+            >
+              {unitOptions.map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          )}
+          {!onUnitChange && unit && (
+            <span className="text-sm text-sage-500">{unit}</span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`p-4 rounded-xl border border-sage-100 bg-white relative group ${disabled ? 'opacity-75' : ''}`}>
+      <div className="text-xs font-medium text-sage-600 mb-1">{label}</div>
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-2xl font-display font-bold text-sage-900">
+          {field === 'user_age' ? value : value.toFixed(1)}
+        </span>
+        {unit && (
+          <span className="text-sm text-sage-500">{unit}</span>
+        )}
+      </div>
+      {helpText && (
+        <div className="text-xs text-sage-500 mt-1 italic">{helpText}</div>
+      )}
+      {!disabled && (
+        <button
+          onClick={onEdit}
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-sage-500 hover:text-sage-700"
+          title="Edit"
+        >
+          <Edit2 className="w-4 h-4" />
+        </button>
+      )}
+      {disabled && (
+        <div className="absolute top-2 right-2 text-sage-400" title="Age is calculated from your birthday">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -74,3 +74,4 @@ export function getAgeForScan(
   return storedAge ?? null;
 }
 
+

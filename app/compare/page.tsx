@@ -112,7 +112,7 @@ export default function ComparePage() {
             <span>Back to History</span>
           </button>
 
-          <h1 className="text-3xl md:text-5xl font-display font-bold gradient-text mb-2">
+          <h1 className="text-3xl md:text-5xl font-display font-bold text-sage-900 mb-2">
             Compare Scans
           </h1>
           <p className="text-lg text-sage-600">
@@ -129,7 +129,7 @@ export default function ComparePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-sage-700 mb-2">
-                  First Scan (Older)
+                  First Scan
                 </label>
                 <select
                   value={selectedScan1Id || ''}
@@ -146,7 +146,7 @@ export default function ComparePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-sage-700 mb-2">
-                  Second Scan (Newer)
+                  Second Scan
                 </label>
                 <select
                   value={selectedScan2Id || ''}
@@ -168,147 +168,172 @@ export default function ComparePage() {
         )}
 
         {/* Comparison View */}
-        {scan1 && scan2 && (
-          <div className="space-y-6">
-            {/* Header with Dates */}
-            <div className="card-soft p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                <div className="text-center md:text-left">
-                  <div className="text-sm text-sage-600 mb-1">First Scan</div>
-                  <div className="flex items-center gap-2 justify-center md:justify-start">
-                    <Calendar className="w-4 h-4 text-sage-600" />
-                    <span className="font-display font-semibold text-sage-900">
-                      {formatDate(scan1.scan_date || scan1.created_at)}
-                    </span>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-sm text-sage-600 mb-1">Time Difference</div>
-                  <div className="font-display font-semibold text-sage-900">
-                    {(() => {
-                      const date1 = new Date(scan1.scan_date || scan1.created_at);
-                      const date2 = new Date(scan2.scan_date || scan2.created_at);
-                      const days = Math.floor((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
-                      return `${days} days`;
-                    })()}
-                  </div>
-                </div>
-                <div className="text-center md:text-right">
-                  <div className="text-sm text-sage-600 mb-1">Second Scan</div>
-                  <div className="flex items-center gap-2 justify-center md:justify-end">
-                    <Calendar className="w-4 h-4 text-sage-600" />
-                    <span className="font-display font-semibold text-sage-900">
-                      {formatDate(scan2.scan_date || scan2.created_at)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Key Metrics Comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ComparisonCard
-                label="Weight"
-                value1={scan1.weight}
-                value2={scan2.weight}
-                unit={scan1.weight_unit}
-                change={calculateChange(scan2.weight, scan1.weight)}
-                percentChange={calculatePercentChange(scan2.weight, scan1.weight)}
-                improvementDirection="down" // Lower weight is better (generally)
-              />
-              <ComparisonCard
-                label="Body Fat Percentage"
-                value1={scan1.body_fat_percentage}
-                value2={scan2.body_fat_percentage}
-                unit="%"
-                change={calculateChange(scan2.body_fat_percentage, scan1.body_fat_percentage)}
-                percentChange={calculatePercentChange(scan2.body_fat_percentage, scan1.body_fat_percentage)}
-                improvementDirection="down" // Lower is better
-              />
-              <ComparisonCard
-                label="Skeletal Muscle Mass"
-                value1={scan1.skeletal_muscle_mass}
-                value2={scan2.skeletal_muscle_mass}
-                unit={scan1.weight_unit}
-                change={calculateChange(scan2.skeletal_muscle_mass, scan1.skeletal_muscle_mass)}
-                percentChange={calculatePercentChange(scan2.skeletal_muscle_mass, scan1.skeletal_muscle_mass)}
-                improvementDirection="up" // Higher is better
-              />
-              <ComparisonCard
-                label="InBody Score"
-                value1={scan1.inbody_score}
-                value2={scan2.inbody_score}
-                unit="points"
-                change={calculateChange(scan2.inbody_score, scan1.inbody_score)}
-                percentChange={calculatePercentChange(scan2.inbody_score, scan1.inbody_score)}
-                improvementDirection="up" // Higher is better
-              />
-              <ComparisonCard
-                label="BMI"
-                value1={scan1.bmi}
-                value2={scan2.bmi}
-                unit="kg/m²"
-                change={calculateChange(scan2.bmi, scan1.bmi)}
-                percentChange={calculatePercentChange(scan2.bmi, scan1.bmi)}
-                improvementDirection="down" // Lower is generally better
-              />
-              <ComparisonCard
-                label="Visceral Fat Level"
-                value1={scan1.visceral_fat_level}
-                value2={scan2.visceral_fat_level}
-                unit="level"
-                change={calculateChange(scan2.visceral_fat_level, scan1.visceral_fat_level)}
-                percentChange={calculatePercentChange(scan2.visceral_fat_level, scan1.visceral_fat_level)}
-                improvementDirection="down" // Lower is better
-              />
-            </div>
-
-            {/* Metabolic Health */}
-            {(scan1.basal_metabolic_rate || scan2.basal_metabolic_rate) && (
+        {scan1 && scan2 && (() => {
+          // Determine which scan is older and which is newer based on dates
+          const date1 = new Date(scan1.scan_date || scan1.created_at);
+          const date2 = new Date(scan2.scan_date || scan2.created_at);
+          const isScan1Older = date1.getTime() < date2.getTime();
+          
+          // Always use older scan as baseline (previous) and newer scan for comparison (latest)
+          const previousScan = isScan1Older ? scan1 : scan2;
+          const latestScan = isScan1Older ? scan2 : scan1;
+          
+          // Calculate time difference (always positive, from older to newer)
+          const days = Math.abs(Math.floor((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24)));
+          
+          return (
+            <div className="space-y-6">
+              {/* Header with Dates */}
               <div className="card-soft p-6">
-                <h3 className="text-xl font-display font-semibold text-sage-900 mb-4">
-                  Metabolic Health
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ComparisonCard
-                    label="Basal Metabolic Rate"
-                    value1={scan1.basal_metabolic_rate}
-                    value2={scan2.basal_metabolic_rate}
-                    unit="kcal/day"
-                    change={calculateChange(scan2.basal_metabolic_rate, scan1.basal_metabolic_rate)}
-                    percentChange={calculatePercentChange(scan2.basal_metabolic_rate, scan1.basal_metabolic_rate)}
-                    improvementDirection="up" // Higher is better
-                  />
-                  <ComparisonCard
-                    label="ECW Ratio"
-                    value1={scan1.ecw_ratio}
-                    value2={scan2.ecw_ratio}
-                    unit="ratio"
-                    change={calculateChange(scan2.ecw_ratio, scan1.ecw_ratio)}
-                    percentChange={calculatePercentChange(scan2.ecw_ratio, scan1.ecw_ratio)}
-                    improvementDirection="down" // Lower is better (closer to 0.36-0.39)
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                  <div className="text-center md:text-left">
+                    <div className="text-sm text-sage-600 mb-1">Previous Scan</div>
+                    <div className="flex items-center gap-2 justify-center md:justify-start">
+                      <Calendar className="w-4 h-4 text-sage-600" />
+                      <span className="font-display font-semibold text-sage-900">
+                        {formatDate(previousScan.scan_date || previousScan.created_at)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm text-sage-600 mb-1">Time Difference</div>
+                    <div className="font-display font-semibold text-sage-900">
+                      {days} days
+                    </div>
+                  </div>
+                  <div className="text-center md:text-right">
+                    <div className="text-sm text-sage-600 mb-1">Latest Scan</div>
+                    <div className="flex items-center gap-2 justify-center md:justify-end">
+                      <Calendar className="w-4 h-4 text-sage-600" />
+                      <span className="font-display font-semibold text-sage-900">
+                        {formatDate(latestScan.scan_date || latestScan.created_at)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
 
-            {/* Actions */}
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => router.push(`/dashboard/${scan1.id}`)}
-                className="px-6 py-3 rounded-full font-medium transition-all duration-300 bg-white text-sage-700 border-2 border-sage-200 hover:border-sage-300 hover:bg-sage-50"
-              >
-                View First Scan Details
-              </button>
-              <button
-                onClick={() => router.push(`/dashboard/${scan2.id}`)}
-                className="btn-organic"
-              >
-                View Second Scan Details
-              </button>
+              {/* Key Metrics Comparison */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ComparisonCard
+                  label="Weight"
+                  value1={previousScan.weight}
+                  value2={latestScan.weight}
+                  unit={previousScan.weight_unit}
+                  change={calculateChange(latestScan.weight, previousScan.weight)}
+                  percentChange={calculatePercentChange(latestScan.weight, previousScan.weight)}
+                  improvementDirection="down" // Lower weight is better (generally)
+                  scan1Label="Previous Scan"
+                  scan2Label="Latest Scan"
+                />
+                <ComparisonCard
+                  label="Body Fat Percentage"
+                  value1={previousScan.body_fat_percentage}
+                  value2={latestScan.body_fat_percentage}
+                  unit="%"
+                  change={calculateChange(latestScan.body_fat_percentage, previousScan.body_fat_percentage)}
+                  percentChange={calculatePercentChange(latestScan.body_fat_percentage, previousScan.body_fat_percentage)}
+                  improvementDirection="down" // Lower is better
+                  scan1Label="Previous Scan"
+                  scan2Label="Latest Scan"
+                />
+                <ComparisonCard
+                  label="Skeletal Muscle Mass"
+                  value1={previousScan.skeletal_muscle_mass}
+                  value2={latestScan.skeletal_muscle_mass}
+                  unit={previousScan.weight_unit}
+                  change={calculateChange(latestScan.skeletal_muscle_mass, previousScan.skeletal_muscle_mass)}
+                  percentChange={calculatePercentChange(latestScan.skeletal_muscle_mass, previousScan.skeletal_muscle_mass)}
+                  improvementDirection="up" // Higher is better
+                  scan1Label="Previous Scan"
+                  scan2Label="Latest Scan"
+                />
+                <ComparisonCard
+                  label="InBody Score"
+                  value1={previousScan.inbody_score}
+                  value2={latestScan.inbody_score}
+                  unit="points"
+                  change={calculateChange(latestScan.inbody_score, previousScan.inbody_score)}
+                  percentChange={calculatePercentChange(latestScan.inbody_score, previousScan.inbody_score)}
+                  improvementDirection="up" // Higher is better
+                  scan1Label="Previous Scan"
+                  scan2Label="Latest Scan"
+                />
+                <ComparisonCard
+                  label="BMI"
+                  value1={previousScan.bmi}
+                  value2={latestScan.bmi}
+                  unit="kg/m²"
+                  change={calculateChange(latestScan.bmi, previousScan.bmi)}
+                  percentChange={calculatePercentChange(latestScan.bmi, previousScan.bmi)}
+                  improvementDirection="down" // Lower is generally better
+                  scan1Label="Previous Scan"
+                  scan2Label="Latest Scan"
+                />
+                <ComparisonCard
+                  label="Visceral Fat Level"
+                  value1={previousScan.visceral_fat_level}
+                  value2={latestScan.visceral_fat_level}
+                  unit="level"
+                  change={calculateChange(latestScan.visceral_fat_level, previousScan.visceral_fat_level)}
+                  percentChange={calculatePercentChange(latestScan.visceral_fat_level, previousScan.visceral_fat_level)}
+                  improvementDirection="down" // Lower is better
+                  scan1Label="Previous Scan"
+                  scan2Label="Latest Scan"
+                />
+              </div>
+
+              {/* Metabolic Health */}
+              {(previousScan.basal_metabolic_rate || latestScan.basal_metabolic_rate) && (
+                <div className="card-soft p-6">
+                  <h3 className="text-xl font-display font-semibold text-sage-900 mb-4">
+                    Metabolic Health
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <ComparisonCard
+                      label="Basal Metabolic Rate"
+                      value1={previousScan.basal_metabolic_rate}
+                      value2={latestScan.basal_metabolic_rate}
+                      unit="kcal/day"
+                      change={calculateChange(latestScan.basal_metabolic_rate, previousScan.basal_metabolic_rate)}
+                      percentChange={calculatePercentChange(latestScan.basal_metabolic_rate, previousScan.basal_metabolic_rate)}
+                      improvementDirection="up" // Higher is better
+                      scan1Label="Previous Scan"
+                      scan2Label="Latest Scan"
+                    />
+                    <ComparisonCard
+                      label="ECW Ratio"
+                      value1={previousScan.ecw_ratio}
+                      value2={latestScan.ecw_ratio}
+                      unit="ratio"
+                      change={calculateChange(latestScan.ecw_ratio, previousScan.ecw_ratio)}
+                      percentChange={calculatePercentChange(latestScan.ecw_ratio, previousScan.ecw_ratio)}
+                      improvementDirection="down" // Lower is better (closer to 0.36-0.39)
+                      scan1Label="Previous Scan"
+                      scan2Label="Latest Scan"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => router.push(`/dashboard/${previousScan.id}`)}
+                  className="px-6 py-3 rounded-full font-medium transition-all duration-300 bg-white text-sage-700 border-2 border-sage-200 hover:border-sage-300 hover:bg-sage-50"
+                >
+                  View Previous Scan Details
+                </button>
+                <button
+                  onClick={() => router.push(`/dashboard/${latestScan.id}`)}
+                  className="btn-organic"
+                >
+                  View Latest Scan Details
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </main>
   );

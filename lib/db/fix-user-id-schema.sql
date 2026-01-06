@@ -11,3 +11,4 @@ ALTER TABLE scans ALTER COLUMN user_id DROP NOT NULL;
 -- Note: user_id will now store auth.uid() directly from Supabase Auth
 -- The RLS policies check auth.uid() = user_id, which will work correctly
 
+

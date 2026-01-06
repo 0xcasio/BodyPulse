@@ -10,6 +10,8 @@ interface ComparisonCardProps {
   change: number | null;
   percentChange: number | null;
   improvementDirection?: 'up' | 'down';
+  scan1Label?: string;
+  scan2Label?: string;
 }
 
 export default function ComparisonCard({
@@ -20,6 +22,8 @@ export default function ComparisonCard({
   change,
   percentChange,
   improvementDirection = 'up',
+  scan1Label = 'First Scan',
+  scan2Label = 'Second Scan',
 }: ComparisonCardProps) {
   const isImprovement = change !== null && (
     improvementDirection === 'up' ? change > 0 : change < 0
@@ -34,7 +38,7 @@ export default function ComparisonCard({
       <div className="grid grid-cols-2 gap-4">
         {/* First Value */}
         <div className="text-center">
-          <div className="text-sm text-sage-600 mb-2">First Scan</div>
+          <div className="text-sm text-sage-600 mb-2">{scan1Label}</div>
           <div className="text-2xl font-display font-bold text-sage-900">
             {value1 !== null ? value1.toFixed(1) : 'N/A'}
             {value1 !== null && unit && (
@@ -45,7 +49,7 @@ export default function ComparisonCard({
 
         {/* Second Value */}
         <div className="text-center">
-          <div className="text-sm text-sage-600 mb-2">Second Scan</div>
+          <div className="text-sm text-sage-600 mb-2">{scan2Label}</div>
           <div className="text-2xl font-display font-bold text-sage-900">
             {value2 !== null ? value2.toFixed(1) : 'N/A'}
             {value2 !== null && unit && (
@@ -69,4 +73,5 @@ export default function ComparisonCard({
     </div>
   );
 }
+
 

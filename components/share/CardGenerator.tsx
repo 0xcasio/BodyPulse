@@ -64,3 +64,4 @@ export default function CardGenerator({ scan, previousScan, theme = 'light' }: C
 }
 
 
+

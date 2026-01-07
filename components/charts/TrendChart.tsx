@@ -81,3 +81,4 @@ export default function TrendChart({ scans, dataKey, label, unit, color = '#10B9
 }
 
 
+

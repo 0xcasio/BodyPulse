@@ -12,3 +12,4 @@ ALTER TABLE scans ALTER COLUMN user_id DROP NOT NULL;
 -- The RLS policies check auth.uid() = user_id, which will work correctly
 
 
+

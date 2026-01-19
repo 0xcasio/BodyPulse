@@ -69,23 +69,23 @@ export default function ExportButton({ scan }: ExportButtonProps) {
       <button
         onClick={() => setShowDropdown(!showDropdown)}
         disabled={isExporting}
-        className="px-4 py-2 rounded-full font-medium transition-all duration-300 bg-white text-sage-700 border-2 border-sage-200 hover:border-sage-300 hover:bg-sage-50 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-3 md:px-4 py-2.5 rounded-full font-medium transition-all duration-300 bg-white text-sage-700 border-2 border-sage-200 hover:border-sage-300 hover:bg-sage-50 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] text-sm whitespace-nowrap"
         title="Export scan data"
       >
         {isExporting ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Exporting...</span>
+            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+            <span className="truncate">Exporting...</span>
           </>
         ) : exportStatus === 'success' ? (
           <>
-            <Check className="w-4 h-4" />
-            <span>Exported!</span>
+            <Check className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Exported!</span>
           </>
         ) : (
           <>
-            <Download className="w-4 h-4" />
-            <span>Export Data</span>
+            <Download className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Export Data</span>
           </>
         )}
       </button>

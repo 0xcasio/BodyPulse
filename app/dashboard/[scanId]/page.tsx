@@ -200,8 +200,8 @@ export default function DashboardScanPage() {
   const hasInBodyScore = scan.inbody_score !== null && scan.inbody_score !== undefined;
 
   return (
-    <main className="min-h-screen blob-bg">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12">
+    <main className="min-h-screen blob-bg overflow-x-hidden">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12 w-full">
         {/* Header */}
         <div className="mb-8">
           <button
@@ -229,98 +229,33 @@ export default function DashboardScanPage() {
               </p>
             </div>
 
-            <div className="flex gap-3 flex-wrap">
-              <ExportButton scan={scan} />
+            <div className="flex gap-2 md:gap-3 flex-wrap w-full md:w-auto">
+              <div className="flex-shrink-0">
+                <ExportButton scan={scan} />
+              </div>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 rounded-full font-medium transition-all duration-300 bg-white text-terracotta-600 border-2 border-terracotta-200 hover:border-terracotta-300 hover:bg-terracotta-50 flex items-center gap-2"
+                className="px-3 md:px-4 py-2.5 rounded-full font-medium transition-all duration-300 bg-white text-terracotta-600 border-2 border-terracotta-200 hover:border-terracotta-300 hover:bg-terracotta-50 flex items-center gap-2 min-h-[44px] text-sm whitespace-nowrap"
                 title="Delete scan"
               >
-                <Trash2 className="w-4 h-4" />
-                <span>Delete</span>
+                <Trash2 className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">Delete</span>
               </button>
               <button
                 onClick={() => router.push('/history')}
-                className="px-4 py-2 rounded-full font-medium transition-all duration-300 bg-white text-sage-700 border-2 border-sage-200 hover:border-sage-300 hover:bg-sage-50 flex items-center gap-2"
+                className="px-3 md:px-4 py-2.5 rounded-full font-medium transition-all duration-300 bg-white text-sage-700 border-2 border-sage-200 hover:border-sage-300 hover:bg-sage-50 flex items-center gap-2 min-h-[44px] text-sm whitespace-nowrap"
               >
-                <Share2 className="w-4 h-4" />
-                <span>View History</span>
+                <Share2 className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">View History</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Personal Information + InBody Score (Combined) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-          {/* Personal Information - Left side */}
-          {(scanData.user_age || scanData.user_height || scanData.weight) && (
-            <div className={`${hasInBodyScore ? 'lg:col-span-7' : 'lg:col-span-12'} card-soft p-6`}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-display font-semibold text-sage-900">
-                  Personal Information
-                </h2>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {scanData.user_age !== null && scanData.user_age !== undefined && (
-                  <EditableDataCard
-                    label="Age"
-                    value={scanData.user_age}
-                    unit="years"
-                    field="user_age"
-                    isEditing={editingField === 'user_age'}
-                    editValue={editValues.user_age || ''}
-                    onEdit={() => handleFieldEdit('user_age', scanData.user_age)}
-                    onSave={() => handleFieldSave('user_age')}
-                    onCancel={handleFieldCancel}
-                    onValueChange={(val) => setEditValues({ ...editValues, user_age: val })}
-                    isSaving={isSaving}
-                    helpText={userProfile?.birthday ? "Calculated from your birthday" : undefined}
-                    disabled={!!userProfile?.birthday}
-                  />
-                )}
-                {scanData.user_height !== null && scanData.user_height !== undefined && (
-                  <EditableDataCard
-                    label="Height"
-                    value={scanData.user_height}
-                    unit={scanData.user_height_unit || 'ft'}
-                    field="user_height"
-                    isEditing={editingField === 'user_height'}
-                    editValue={editValues.user_height || ''}
-                    editUnit={editValues.user_height_unit || ''}
-                    onEdit={() => handleFieldEdit('user_height', scanData.user_height, scanData.user_height_unit)}
-                    onSave={() => handleFieldSave('user_height')}
-                    onCancel={handleFieldCancel}
-                    onValueChange={(val) => setEditValues({ ...editValues, user_height: val })}
-                    onUnitChange={(unit) => setEditValues({ ...editValues, user_height_unit: unit })}
-                    unitOptions={['ft', 'in', 'cm']}
-                    isSaving={isSaving}
-                  />
-                )}
-                {scanData.weight && (
-                  <EditableDataCard
-                    label="Total Weight"
-                    value={scanData.weight.value}
-                    unit={scanData.weight.unit}
-                    field="weight"
-                    isEditing={editingField === 'weight'}
-                    editValue={editValues.weight || ''}
-                    editUnit={editValues.weight_unit || ''}
-                    onEdit={() => handleFieldEdit('weight', scanData.weight?.value, scanData.weight?.unit)}
-                    onSave={() => handleFieldSave('weight')}
-                    onCancel={handleFieldCancel}
-                    onValueChange={(val) => setEditValues({ ...editValues, weight: val })}
-                    onUnitChange={(unit) => setEditValues({ ...editValues, weight_unit: unit })}
-                    unitOptions={['lbs', 'kg']}
-                    isSaving={isSaving}
-                  />
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* InBody Score - Right side */}
-          {hasInBodyScore && (
-            <div className="lg:col-span-5 card-soft p-6">
+        {/* InBody Score - Top (Mobile First) */}
+        {hasInBodyScore && (
+          <div className="mb-6">
+            <div className="card-soft p-6">
               <h2 className="text-lg font-display font-semibold text-sage-900 mb-4 text-center">
                 InBody Score
               </h2>
@@ -333,8 +268,74 @@ export default function DashboardScanPage() {
                 Overall body composition evaluation
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Personal Information */}
+        {(scanData.user_age || scanData.user_height || scanData.weight) && (
+          <div className="card-soft p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-display font-semibold text-sage-900">
+                Personal Information
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {scanData.user_age !== null && scanData.user_age !== undefined && (
+                <EditableDataCard
+                  label="Age"
+                  value={scanData.user_age}
+                  unit="years"
+                  field="user_age"
+                  isEditing={editingField === 'user_age'}
+                  editValue={editValues.user_age || ''}
+                  onEdit={() => handleFieldEdit('user_age', scanData.user_age)}
+                  onSave={() => handleFieldSave('user_age')}
+                  onCancel={handleFieldCancel}
+                  onValueChange={(val) => setEditValues({ ...editValues, user_age: val })}
+                  isSaving={isSaving}
+                  helpText={userProfile?.birthday ? "Calculated from your birthday" : undefined}
+                  disabled={!!userProfile?.birthday}
+                />
+              )}
+              {scanData.user_height !== null && scanData.user_height !== undefined && (
+                <EditableDataCard
+                  label="Height"
+                  value={scanData.user_height}
+                  unit={scanData.user_height_unit || 'ft'}
+                  field="user_height"
+                  isEditing={editingField === 'user_height'}
+                  editValue={editValues.user_height || ''}
+                  editUnit={editValues.user_height_unit || ''}
+                  onEdit={() => handleFieldEdit('user_height', scanData.user_height, scanData.user_height_unit)}
+                  onSave={() => handleFieldSave('user_height')}
+                  onCancel={handleFieldCancel}
+                  onValueChange={(val) => setEditValues({ ...editValues, user_height: val })}
+                  onUnitChange={(unit) => setEditValues({ ...editValues, user_height_unit: unit })}
+                  unitOptions={['ft', 'in', 'cm']}
+                  isSaving={isSaving}
+                />
+              )}
+              {scanData.weight && (
+                <EditableDataCard
+                  label="Total Weight"
+                  value={scanData.weight.value}
+                  unit={scanData.weight.unit}
+                  field="weight"
+                  isEditing={editingField === 'weight'}
+                  editValue={editValues.weight || ''}
+                  editUnit={editValues.weight_unit || ''}
+                  onEdit={() => handleFieldEdit('weight', scanData.weight?.value, scanData.weight?.unit)}
+                  onSave={() => handleFieldSave('weight')}
+                  onCancel={handleFieldCancel}
+                  onValueChange={(val) => setEditValues({ ...editValues, weight: val })}
+                  onUnitChange={(unit) => setEditValues({ ...editValues, weight_unit: unit })}
+                  unitOptions={['lbs', 'kg']}
+                  isSaving={isSaving}
+                />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Body Composition */}
         <CategorySection
@@ -342,6 +343,7 @@ export default function DashboardScanPage() {
           description="Complete breakdown of what your body is made of"
           icon={<Activity className="w-5 h-5" />}
           delay="0.15s"
+          defaultExpanded={false}
         >
           {/* Summary Card */}
           {scanData.weight && (
@@ -410,6 +412,7 @@ export default function DashboardScanPage() {
           description="Skeletal muscle mass and fat breakdown"
           icon={<TrendingUp className="w-5 h-5" />}
           delay="0.2s"
+          defaultExpanded={false}
         >
           {/* Fat-Free Mass + Skeletal Muscle Mass (Combined Row) */}
           {(scanData.fat_free_mass || scanData.skeletal_muscle_mass) && (
@@ -571,6 +574,7 @@ export default function DashboardScanPage() {
             description="Your personalized goals based on InBody analysis"
             icon={<Target className="w-5 h-5" />}
             delay="0.25s"
+            defaultExpanded={false}
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {scanData.target_weight && (
@@ -618,6 +622,7 @@ export default function DashboardScanPage() {
           description="Energy expenditure and fat distribution"
           icon={<Heart className="w-5 h-5" />}
           delay="0.3s"
+          defaultExpanded={false}
         >
           {/* Clickable Metrics with Full Explanations */}
           <div className="mb-4">
@@ -661,6 +666,7 @@ export default function DashboardScanPage() {
             description="Proportions and health assessments"
             icon={<Scale className="w-5 h-5" />}
             delay="0.35s"
+            defaultExpanded={false}
           >
             {/* Clickable Metrics with Full Explanations */}
             {(scanData.waist_hip_ratio || scanData.obesity_degree) && (

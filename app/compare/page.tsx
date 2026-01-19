@@ -100,8 +100,8 @@ export default function ComparePage() {
   }
 
   return (
-    <main className="min-h-screen blob-bg">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12">
+    <main className="min-h-screen blob-bg overflow-x-hidden">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12 w-full">
         {/* Header */}
         <div className="mb-8">
           <button

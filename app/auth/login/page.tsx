@@ -44,7 +44,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen blob-bg flex items-center justify-center p-4">
+    <main className="min-h-screen blob-bg flex items-center justify-center p-4 overflow-x-hidden">
       <div className="card-soft p-8 md:p-12 max-w-md w-full relative z-10">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-display font-bold gradient-text mb-2">

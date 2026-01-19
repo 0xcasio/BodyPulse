@@ -116,9 +116,9 @@ export default function HistoryPage() {
   }
 
   return (
-    <main className="min-h-screen blob-bg">
+    <main className="min-h-screen blob-bg overflow-x-hidden">
       <motion.div
-        className="relative z-10 max-w-6xl mx-auto px-4 py-8 md:py-12"
+        className="relative z-10 max-w-6xl mx-auto px-4 py-8 md:py-12 w-full"
         variants={pageVariants}
         initial="initial"
         animate="animate"
@@ -135,15 +135,17 @@ export default function HistoryPage() {
         </motion.div>
 
         {/* Filters and Stats */}
-        <div className="card-soft p-6 mb-8">
+        <div className="card-soft p-4 md:p-6 mb-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Filter className="w-5 h-5 text-sage-600" />
-              <span className="text-sm font-medium text-sage-700">Filter by date:</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+              <div className="flex items-center gap-2 min-w-0">
+                <Filter className="w-5 h-5 text-sage-600 flex-shrink-0" />
+                <span className="text-sm font-medium text-sage-700 whitespace-nowrap">Filter by date:</span>
+              </div>
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as DateRange)}
-                className="px-4 py-2 rounded-full border-2 border-sage-200 bg-white text-sage-700 focus:border-sage-400 focus:outline-none"
+                className="px-4 py-2.5 rounded-full border-2 border-sage-200 bg-white text-sage-700 focus:border-sage-400 focus:outline-none text-sm min-h-[44px] w-full sm:w-auto"
               >
                 <option value="all">All Time</option>
                 <option value="1month">Last Month</option>
@@ -153,19 +155,19 @@ export default function HistoryPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="text-right">
+            <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
+              <div className="text-right flex-shrink-0">
                 <div className="text-2xl font-display font-bold text-sage-900">
                   {filteredScans.length}
                 </div>
-                <div className="text-sm text-sage-600">Total Scans</div>
+                <div className="text-sm text-sage-600 whitespace-nowrap">Total Scans</div>
               </div>
               <button
                 onClick={() => router.push('/')}
-                className="btn-organic flex items-center gap-2"
+                className="btn-organic flex items-center gap-2 min-h-[44px] px-4 py-2.5 text-sm whitespace-nowrap flex-1 md:flex-initial"
               >
-                <Upload className="w-5 h-5" />
-                <span>Upload New Scan</span>
+                <Upload className="w-5 h-5 flex-shrink-0" />
+                <span className="truncate">Upload New Scan</span>
               </button>
             </div>
           </div>
@@ -173,15 +175,15 @@ export default function HistoryPage() {
 
         {/* Progress Summary */}
         {filteredScans.length > 0 && (
-          <div className="card-soft p-6 mb-8">
+          <div className="card-soft p-4 md:p-6 mb-8">
             <h2 className="text-xl font-display font-semibold text-sage-900 mb-4 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Progress Summary
+              <TrendingUp className="w-5 h-5 flex-shrink-0" />
+              <span className="truncate">Progress Summary</span>
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <div className="text-sm text-sage-600 mb-1">Weight Change</div>
-                <div className="text-2xl font-display font-bold text-sage-900">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <div className="min-w-0">
+                <div className="text-xs md:text-sm text-sage-600 mb-1 truncate">Weight Change</div>
+                <div className="text-xl md:text-2xl font-display font-bold text-sage-900 break-words">
                   {(() => {
                     if (filteredScans.length < 2) {
                       return filteredScans[0]?.weight ? `${filteredScans[0].weight.toFixed(1)}` : 'N/A';
@@ -193,15 +195,15 @@ export default function HistoryPage() {
                     return change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
                   })()}
                   {filteredScans.length >= 2 && (
-                    <span className="text-sm text-sage-600 ml-1">
+                    <span className="text-xs md:text-sm text-sage-600 ml-1 whitespace-nowrap">
                       {filteredScans[0]?.weight_unit || 'lbs'}
                     </span>
                   )}
                 </div>
               </div>
-              <div>
-                <div className="text-sm text-sage-600 mb-1">Body Fat Change</div>
-                <div className="text-2xl font-display font-bold text-sage-900">
+              <div className="min-w-0">
+                <div className="text-xs md:text-sm text-sage-600 mb-1 truncate">Body Fat Change</div>
+                <div className="text-xl md:text-2xl font-display font-bold text-sage-900 break-words">
                   {(() => {
                     if (filteredScans.length < 2) {
                       return filteredScans[0]?.body_fat_percentage ? `${filteredScans[0].body_fat_percentage.toFixed(1)}%` : 'N/A';
@@ -213,19 +215,19 @@ export default function HistoryPage() {
                     return change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
                   })()}
                   {filteredScans.length >= 2 && (
-                    <span className="text-sm text-sage-600 ml-1">%</span>
+                    <span className="text-xs md:text-sm text-sage-600 ml-1 whitespace-nowrap">%</span>
                   )}
                 </div>
               </div>
-              <div>
-                <div className="text-sm text-sage-600 mb-1">InBody Score</div>
-                <div className="text-2xl font-display font-bold text-sage-900">
+              <div className="min-w-0">
+                <div className="text-xs md:text-sm text-sage-600 mb-1 truncate">InBody Score</div>
+                <div className="text-xl md:text-2xl font-display font-bold text-sage-900 break-words">
                   {filteredScans[0]?.inbody_score || 'N/A'}
                 </div>
               </div>
-              <div>
-                <div className="text-sm text-sage-600 mb-1">Time Span</div>
-                <div className="text-2xl font-display font-bold text-sage-900">
+              <div className="min-w-0">
+                <div className="text-xs md:text-sm text-sage-600 mb-1 truncate">Time Span</div>
+                <div className="text-xl md:text-2xl font-display font-bold text-sage-900 break-words">
                   {(() => {
                     if (filteredScans.length < 2) return 'N/A';
                     const first = new Date(filteredScans[filteredScans.length - 1].scan_date || filteredScans[filteredScans.length - 1].created_at);

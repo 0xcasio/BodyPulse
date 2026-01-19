@@ -180,9 +180,9 @@ export default function ReviewPage() {
   };
 
   return (
-    <main className="min-h-screen blob-bg">
+    <main className="min-h-screen blob-bg overflow-x-hidden">
       <motion.div
-        className="relative z-10 max-w-5xl mx-auto px-4 py-8 md:py-12"
+        className="relative z-10 max-w-5xl mx-auto px-4 py-8 md:py-12 w-full"
         variants={pageVariants}
         initial="initial"
         animate="animate"

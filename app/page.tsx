@@ -124,9 +124,9 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen blob-bg">
+    <main className="min-h-screen blob-bg overflow-x-hidden">
       <motion.div
-        className="relative z-10 max-w-4xl mx-auto px-4 py-12 md:py-20"
+        className="relative z-10 max-w-4xl mx-auto px-4 py-12 md:py-20 w-full overflow-x-hidden"
         variants={pageVariants}
         initial="initial"
         animate="animate"

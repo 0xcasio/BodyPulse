@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Upload, History, LogOut, LogIn, Settings, Menu, X } from "lucide-react";
+import { Upload, History, LogOut, LogIn, Settings, Menu, X, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import { getSession, signOut } from "@/lib/auth";
 
@@ -70,13 +70,24 @@ export default function NavBar() {
                 <Link
                   href="/"
                   className={`px-4 py-2 rounded-full font-medium transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${
-                    isActive('/') && pathname !== '/history' && pathname !== '/compare'
+                    isActive('/') && pathname !== '/history' && pathname !== '/compare' && pathname !== '/insights'
                       ? 'bg-sage-100 text-sage-900'
                       : 'text-sage-600 hover:bg-sage-50'
                   }`}
                 >
                   <Upload className="w-4 h-4 flex-shrink-0" />
                   <span>Upload</span>
+                </Link>
+                <Link
+                  href="/insights"
+                  className={`px-4 py-2 rounded-full font-medium transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${
+                    isActive('/insights')
+                      ? 'bg-sage-100 text-sage-900'
+                      : 'text-sage-600 hover:bg-sage-50'
+                  }`}
+                >
+                  <Lightbulb className="w-4 h-4 flex-shrink-0" />
+                  <span>Insights</span>
                 </Link>
                 <Link
                   href="/history"
@@ -155,13 +166,25 @@ export default function NavBar() {
                 href="/"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`px-4 py-3 rounded-full font-medium transition-all duration-300 flex items-center gap-3 ${
-                  isActive('/') && pathname !== '/history' && pathname !== '/compare'
+                  isActive('/') && pathname !== '/history' && pathname !== '/compare' && pathname !== '/insights'
                     ? 'bg-sage-100 text-sage-900'
                     : 'text-sage-600 hover:bg-sage-50'
                 }`}
               >
                 <Upload className="w-5 h-5 flex-shrink-0" />
                 <span>Upload</span>
+              </Link>
+              <Link
+                href="/insights"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-4 py-3 rounded-full font-medium transition-all duration-300 flex items-center gap-3 ${
+                  isActive('/insights')
+                    ? 'bg-sage-100 text-sage-900'
+                    : 'text-sage-600 hover:bg-sage-50'
+                }`}
+              >
+                <Lightbulb className="w-5 h-5 flex-shrink-0" />
+                <span>Insights</span>
               </Link>
               <Link
                 href="/history"

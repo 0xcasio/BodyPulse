@@ -130,10 +130,12 @@ export default function ReviewPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    
+
     try {
       // Save scan data to database (without image for now)
-      const { saveScan } = await import('@/lib/db/queries');
+      const { saveScan, getUserScans } = await import('@/lib/db/queries');
+      const { getSession } = await import('@/lib/auth');
+
       const scan = await saveScan(
         editedData!,
         '', // No image URL for now
@@ -150,7 +152,30 @@ export default function ReviewPage() {
       };
 
       sessionStorage.setItem('currentScan', JSON.stringify(scanData));
-      
+
+      // Trigger background insights generation (fire and forget)
+      if (scan?.id) {
+        console.log('🎯 Triggering background insights generation...');
+
+        // Get user session and scans
+        const { session } = await getSession();
+        if (session) {
+          const userScans = await getUserScans(session.user.id);
+
+          // Sort by date to find previous scan
+          const sortedScans = userScans.sort((a, b) =>
+            new Date(b.scan_date).getTime() - new Date(a.scan_date).getTime()
+          );
+
+          // Current scan is the most recent, previous is the one before it
+          const previousScan = sortedScans.length > 1 ? sortedScans[1] : null;
+
+          // Import and trigger background generation
+          const { triggerBackgroundInsightsGeneration } = await import('@/lib/insights/background-generator');
+          triggerBackgroundInsightsGeneration(scan, previousScan);
+        }
+      }
+
       // Navigate to dashboard
       router.push(scan?.id ? `/dashboard/${scan.id}` : '/dashboard');
     } catch (error) {

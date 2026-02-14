@@ -9,6 +9,7 @@ import { getUserScans } from "@/lib/db/queries";
 import { Scan } from "@/types/scan";
 import { identifyFocusAreas } from "@/lib/insights/prioritization";
 import { detectImprovements } from "@/lib/insights/improvement-detector";
+import { getInsightsForScan, saveInsightsForScan } from "@/lib/db/insights";
 import { InsightsResponse, FocusAreaInsight, MetricImprovement } from "@/types/insights";
 import InsightHero from "@/components/insights/InsightHero";
 import ImprovementCard from "@/components/insights/ImprovementCard";
@@ -63,38 +64,21 @@ export default function InsightsPage() {
         setImprovements(detectedImprovements);
       }
 
-      // Check cache first
-      const cacheKey = `insights_${latest.id}`;
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        try {
-          const cachedData = JSON.parse(cached);
-          const cacheTime = cachedData.timestamp;
-          const now = Date.now();
-          const ttl = 24 * 60 * 60 * 1000; // 24 hours
-          const ageMinutes = Math.floor((now - cacheTime) / 1000 / 60);
-
-          if (now - cacheTime < ttl) {
-            if (ageMinutes < 1) {
-              console.log('🎉 Insights were pre-generated in the background! Loading instantly...');
-            } else {
-              console.log(`✅ Loading insights from cache (${ageMinutes} minutes old)`);
-              console.log(`🚀 Cache will remain valid for ${Math.floor((ttl - (now - cacheTime)) / 1000 / 60)} more minutes`);
-            }
-            setInsights(cachedData.data);
-            setIsLoading(false);
-            return;
-          } else {
-            console.log('⏰ Cache expired, regenerating insights...');
-          }
-        } catch (e) {
-          console.warn('❌ Failed to parse cached insights, will regenerate');
-        }
-      } else {
-        console.log('🆕 No cache found for this scan, generating fresh insights...');
+      // Check database for existing insights first
+      const storedInsights = await getInsightsForScan(latest.id);
+      if (storedInsights) {
+        console.log('Loading insights from database (previously generated)');
+        setInsights({
+          overall_summary: storedInsights.overall_summary,
+          celebration: storedInsights.celebration || undefined,
+          focus_areas: storedInsights.focus_areas,
+        });
+        setIsLoading(false);
+        return;
       }
 
-      // Generate insights
+      // No insights in DB — generate fresh ones
+      console.log('No insights found in database, generating fresh insights...');
       await generateInsights(latest, previous, session.user.id);
     } catch (err) {
       console.error('Error loading insights:', err);
@@ -146,16 +130,9 @@ export default function InsightsPage() {
 
       setInsights(result.data);
 
-      // Cache the result
-      const cacheKey = `insights_${latest.id}`;
-      sessionStorage.setItem(
-        cacheKey,
-        JSON.stringify({
-          data: result.data,
-          timestamp: Date.now(),
-        })
-      );
-      console.log('💾 Insights cached successfully! Next visit will load instantly.');
+      // Persist to database so insights survive across sessions/devices
+      await saveInsightsForScan(latest.id, userId, result.data);
+      console.log('Insights saved to database successfully');
 
       setIsLoading(false);
     } catch (err) {
@@ -165,15 +142,17 @@ export default function InsightsPage() {
     }
   };
 
-  const retryGeneration = () => {
+  const retryGeneration = async () => {
     if (latestScan) {
       setError(null);
       setIsLoading(true);
-      // Clear cache
-      const cacheKey = `insights_${latestScan.id}`;
-      sessionStorage.removeItem(cacheKey);
-      // Regenerate
-      generateInsights(latestScan, previousScan, '');
+      const { session } = await getSession();
+      if (!session) {
+        setError('Authentication required. Please log in again.');
+        setIsLoading(false);
+        return;
+      }
+      await generateInsights(latestScan, previousScan, session.user.id);
     }
   };
 

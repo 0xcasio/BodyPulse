@@ -1,18 +1,19 @@
 import { Scan } from '@/types/scan';
 import { identifyFocusAreas } from './prioritization';
 import { InsightsResponse } from '@/types/insights';
+import { saveInsightsForScan } from '@/lib/db/insights';
 
 /**
  * Generates insights in the background after a scan is saved.
  * This is a fire-and-forget operation that doesn't block the UI.
- * Results are cached in sessionStorage for instant access later.
+ * Results are persisted to the database so they survive across sessions/devices.
  */
 export async function generateInsightsInBackground(
   latestScan: Scan,
   previousScan: Scan | null
 ): Promise<void> {
   try {
-    console.log('🚀 Starting background insights generation for scan:', latestScan.id);
+    console.log('Starting background insights generation for scan:', latestScan.id);
 
     // Get user gender from scan
     const gender = latestScan.user_gender as 'male' | 'female' | undefined;
@@ -21,11 +22,11 @@ export async function generateInsightsInBackground(
     const focusAreas = identifyFocusAreas(latestScan, gender);
 
     if (focusAreas.length === 0) {
-      console.warn('⚠️ No focus areas identified for background generation');
+      console.warn('No focus areas identified for background generation');
       return;
     }
 
-    console.log(`✅ Identified ${focusAreas.length} focus areas, calling AI API...`);
+    console.log(`Identified ${focusAreas.length} focus areas, calling AI API...`);
 
     // Call API to generate AI insights
     const response = await fetch('/api/insights/generate', {
@@ -45,33 +46,25 @@ export async function generateInsightsInBackground(
     });
 
     if (!response.ok) {
-      console.error('❌ Background insights generation failed:', response.statusText);
+      console.error('Background insights generation failed:', response.statusText);
       return;
     }
 
     const result: InsightsResponse = await response.json();
 
     if (!result.success || !result.data) {
-      console.error('❌ Background insights generation failed:', result.error);
+      console.error('Background insights generation failed:', result.error);
       return;
     }
 
-    // Cache the result
-    const cacheKey = `insights_${latestScan.id}`;
-    sessionStorage.setItem(
-      cacheKey,
-      JSON.stringify({
-        data: result.data,
-        timestamp: Date.now(),
-      })
-    );
+    // Persist to database so insights survive across sessions and devices
+    await saveInsightsForScan(latestScan.id, latestScan.user_id, result.data);
 
-    console.log('✅ Background insights generated and cached successfully!');
-    console.log('🎉 User will see instant results when they visit the Insights page');
+    console.log('Background insights generated and saved to database successfully');
   } catch (error) {
     // Fail silently - this is background generation
     // User can still generate insights on-demand if needed
-    console.error('❌ Background insights generation error:', error);
+    console.error('Background insights generation error:', error);
   }
 }
 
